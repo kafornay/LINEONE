@@ -3,77 +3,172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LINE ONE 🕶️</title>
-<link href="https://fonts.googleapis.com/css?family=Poppins:400,600&display=swap" rel="stylesheet">
+<title>🕶️ LINE ONE — Vitrine</title>
+
 <style>
-body { font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#fafafa,#ffeaea 100%);margin:0;padding:0;min-height:100vh;}
-header { background:#c32b2b;color:white;text-align:center;padding:2rem 1rem 1.3rem;font-size:2rem;letter-spacing:2px;font-weight:bold;box-shadow:0 2px 8px rgba(195,43,43,0.08);}
-.container { display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;padding:2rem .8rem;max-width:1200px;margin:auto;}
-.card { background:#fff;border-radius:16px;box-shadow:0 6px 24px rgba(195,43,43,.10);padding:1.3rem .9rem .9rem .9rem;display:flex;flex-direction:column;align-items:center;transition:.15s box-shadow,.15s transform;position:relative;}
-.card:hover { box-shadow:0 10px 28px rgba(195,43,43,.13);transform:translateY(-3px) scale(1.02);}
-img { max-width:100%;max-height:170px;object-fit:cover;border-radius:10px;margin-bottom:.7rem;background:#f7f7f7;}
-h3 { margin:.5rem auto .3rem auto;font-size:1.15rem;color:#c32b2b;}
-p { color:#444;font-size:.98rem;margin-bottom:.7rem;}
-strong { color:#222;font-size:.99rem;margin-bottom:.7rem;}
-button { background:#c32b2b;color:#fff;border:none;border-radius:8px;padding:.7rem .5rem;cursor:pointer;font-weight:bold;font-size:.98rem;width:100%;transition:.15s background,.12s transform;margin-top:auto;}
-button:hover:not(:disabled) { background:#a82323;transform:scale(1.03);}
-button:disabled { background:#ccc !important;color:#888 !important;cursor:not-allowed;}
-#carrinhoBtn { position:fixed;bottom:22px;right:22px;background:#c32b2b;color:#fff;border-radius:50%;width:62px;height:62px;border:none;font-size:2.1rem;cursor:pointer;box-shadow:0 4px 16px rgba(195,43,43,.18);display:flex;align-items:center;justify-content:center;z-index:10;}
-#carrinhoBtn:hover { background:#a82323;transform:scale(1.07);}
-@media (max-width:700px) { header{font-size:1.3rem;} .container{padding:.7rem;} #carrinhoBtn{width:54px;height:54px;font-size:1.5rem;} }
+body {
+  background: #111;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background: #c32b2b;
+  color: #fff;
+  padding: 15px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 0 10px #000;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.card {
+  background: #1e1e1e;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 10px #000;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px #c32b2b66;
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 10px 15px;
+}
+
+.card h3 {
+  margin: 0;
+  color: #fff;
+}
+
+.card p {
+  color: #bbb;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.price {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+button {
+  width: 100%;
+  background: #c32b2b;
+  border: none;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #a62121;
+}
+
+button.esgotado {
+  background: gray;
+  cursor: not-allowed;
+}
+
+footer {
+  text-align: center;
+  padding: 15px;
+  color: #777;
+  font-size: 14px;
+}
 </style>
 </head>
 <body>
-<header>LINE ONE 🕶️</header>
+
+<header>🕶️ LINE ONE — Vitrine</header>
+
 <div class="container" id="produtos"></div>
-<button id="carrinhoBtn" title="Ver carrinho">🛒</button>
+
+<footer>© 2025 LINE ONE</footer>
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXiS_pat0Gi1OTirwm5NZSrWUdiB4onXobDo1x0bBMudvnXBf13SQMxSyIJPlCL-IS6g/exec";
-const WHATSAPP = "5522999631760";
-let carrinho = [];
+const WHATSAPP = "5522999631760"; // seu número em formato internacional
 
 async function carregarProdutos() {
-    try {
-        const res = await fetch(SCRIPT_URL + "?action=get");
-        const produtos = await res.json();
-        const container = document.getElementById("produtos");
-        container.innerHTML = "";
-        produtos.forEach(p => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-                <img src="${p.LinkImagem}" alt="${p.Nome}">
-                <h3>${p.Nome}</h3>
-                <p>${p.Descricao}</p>
-                <strong>R$ ${p.Preco}</strong>
-                <button ${p.Estoque <= 0 ? "disabled" : ""}>
-                  ${p.Estoque <= 0 ? "Esgotado" : "Adicionar ao carrinho"}
-                </button>`;
-            const btn = card.querySelector("button");
-            btn.addEventListener("click", () => addCarrinho(p));
-            container.appendChild(card);
-        });
-    } catch (err) {
-        document.getElementById("produtos").innerHTML = "<p>Erro ao carregar produtos.</p>";
-    }
+  const container = document.getElementById("produtos");
+  container.innerHTML = "⏳ Carregando produtos...";
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=get`);
+    const dados = await res.json();
+
+    container.innerHTML = "";
+
+    dados.forEach(prod => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const imagem = prod.LinkImagem || "https://via.placeholder.com/300x200?text=Sem+Imagem";
+      const estoque = parseInt(prod.Estoque) || 0;
+
+      card.innerHTML = `
+        <img src="${imagem}" alt="${prod.Nome}">
+        <div class="card-content">
+          <h3>${prod.Nome}</h3>
+          <p>${prod.Descricao}</p>
+          <div class="price">R$ ${Number(prod.Preco).toFixed(2)}</div>
+          ${
+            estoque > 0
+              ? `<button onclick="enviarCarrinho('${prod.Nome}', '${prod.Preco}')">🛒 Adicionar ao Carrinho</button>`
+              : `<button class="esgotado" onclick="avisar('${prod.Nome}')">🔔 Avisar quando chegar</button>`
+          }
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+  } catch (erro) {
+    container.innerHTML = "❌ Erro ao carregar produtos.";
+    console.error(erro);
+  }
 }
 
-function addCarrinho(produto) {
-    carrinho.push(produto);
-    alert(produto.Nome + " adicionado!");
+function enviarCarrinho(nome, preco) {
+  const msg = `Olá! Quero comprar o produto *${nome}* por R$${preco}.`;
+  const link = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  window.open(link, "_blank");
 }
 
-document.getElementById("carrinhoBtn").addEventListener("click", () => {
-    if (carrinho.length === 0) return alert("Carrinho vazio!");
-    let msg = "🛍️ Pedido LINE ONE:%0A";
-    carrinho.forEach(p => msg += `• ${p.Nome} - R$${p.Preco}%0A`);
-    msg += "%0AEnviar meu pedido 👇";
-    window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, "_blank");
-});
+function avisar(nome) {
+  const msg = `Olá! Quero ser avisado quando o produto *${nome}* voltar ao estoque.`;
+  const link = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  window.open(link, "_blank");
+}
 
 carregarProdutos();
 </script>
+
 </body>
 </html>
-
