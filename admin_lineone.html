@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin LINE ONE 👓</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f4f4f4 60%, #ffeaea 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    header {
+      background: #c32b2b;
+      color: #fff;
+      text-align: center;
+      padding: 2rem 1rem 1.2rem 1rem;
+      font-size: 1.7rem;
+      letter-spacing: 2px;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(195,43,43,0.08);
+    }
+    form {
+      background: #fff;
+      max-width: 420px;
+      margin: 2.5rem auto;
+      padding: 2rem 2rem 1.5rem 2rem;
+      border-radius: 18px;
+      box-shadow: 0 6px 24px rgba(195,43,43,0.10);
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: .3rem;
+      color: #c32b2b;
+      font-size: .98rem;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: .85rem .9rem;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color .2s;
+    }
+    input:focus, textarea:focus {
+      border-color: #c32b2b;
+      outline: none;
+    }
+    textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+    button {
+      background: linear-gradient(90deg,#c32b2b,#e04a4a);
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 1.08rem;
+      letter-spacing: .5px;
+      box-shadow: 0 2px 8px rgba(195,43,43,0.08);
+      transition: background .2s, transform .1s;
+    }
+    button:hover { 
+      background: linear-gradient(90deg,#a82323,#c32b2b);
+      transform: translateY(-2px) scale(1.03);
+    }
+    .success {
+      color: #27ae60;
+      text-align: center;
+      font-weight: bold;
+      margin-top: -.5rem;
+    }
+    @media (max-width:500px) {
+      form { padding: 1.3rem .7rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>Administração LINE ONE</header>
+
+  <form id="formProduto" autocomplete="off">
+    <div>
+      <label for="nome">Nome do produto</label>
+      <input type="text" id="nome" placeholder="Exemplo: Óculos Solar" required>
+    </div>
+    <div>
+      <label for="descricao">Descrição</label>
+      <textarea id="descricao" placeholder="Breve descrição do produto" required></textarea>
+    </div>
+    <div style="display:flex; gap:.7rem;">
+      <div style="flex:1">
+        <label for="preco">Preço (R$)</label>
+        <input type="number" id="preco" placeholder="Ex.: 129.90" step="0.01" required>
+      </div>
+      <div style="flex:1">
+        <label for="estoque">Estoque</label>
+        <input type="number" id="estoque" placeholder="Qtd." required>
+      </div>
+    </div>
+    <div>
+      <label for="imagem">Imagem</label>
+      <input type="file" id="imagem" accept="image/*" required>
+    </div>
+    <button type="submit">Salvar produto</button>
+    <p id="mensagem" class="success"></p>
+  </form>
+
+  <script>
+    const SCRIPT_URL = "COLE_AQUI_URL_DO_WEB_APP";
+
+    document.getElementById("formProduto").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById("nome").value;
+      const descricao = document.getElementById("descricao").value;
+      const preco = document.getElementById("preco").value;
+      const estoque = document.getElementById("estoque").value;
+      const imagemFile = document.getElementById("imagem").files[0];
+
+      const formData = new FormData();
+      formData.append("nome", nome);
+      formData.append("descricao", descricao);
+      formData.append("preco", preco);
+      formData.append("estoque", estoque);
+      formData.append("imagem", imagemFile);
+
+      const res = await fetch(SCRIPT_URL + "?action=add", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      document.getElementById("mensagem").textContent = data.message;
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
