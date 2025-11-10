@@ -1,50 +1,177 @@
-// ... código anterior ...
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>📦 LINE ONE — Painel de Produtos</title>
+<link href="https://fonts.googleapis.com/css?family=Poppins:400,600&display=swap" rel="stylesheet">
+<style>
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background: linear-gradient(135deg, #111, #2b2b2b);
+  color: #fff;
+  margin: 0;
+  padding: 20px;
+}
+h1 {
+  text-align: center;
+  color: #c32b2b;
+}
+form {
+  background: #181818;
+  padding: 24px;
+  border-radius: 16px;
+  max-width: 420px;
+  margin: 30px auto;
+  box-shadow: 0 0 18px #000a;
+}
+label {
+  display: block;
+  margin-top: 14px;
+  font-weight: bold;
+}
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 8px;
+  background: #232323;
+  color: #fff;
+}
+input[type="file"] {
+  background: none;
+}
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg,#c32b2b,#a62121);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 17px;
+}
+button:hover {
+  background: linear-gradient(90deg,#a62121,#c32b2b);
+}
+img.preview {
+  display: block;
+  max-width: 100%;
+  margin-top: 12px;
+  border-radius: 8px;
+}
+#mensagem {
+  text-align: center;
+  margin-top: 14px;
+}
+#idProduto {
+   text-align:center; 
+   color:#4CAF50; 
+   font-size:15px; 
+   margin-top:8px; 
+   word-break:break-all;
+}
+</style>
+</head>
+<body>
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  msg.innerText = "⏳ Enviando...";
-  msg.style.color = "#fff";
-  idProdutoDiv.innerText = "";
+<h1>📦 Painel de Produtos</h1>
 
-  const file = imgInput.files[0];
-  if (!file) {
-    msg.innerText = "Selecione uma imagem!";
-    return;
-  }
+<form id="formProduto">
+  <label>Nome do Produto</label>
+  <input type="text" id="nome" required>
 
-  // Lê a imagem como base64
-  const reader = new FileReader();
-  reader.onload = async function(event) {
-    const base64 = event.target.result.split(',')[1]; // remove o prefixo data:image/...
+  <label>Descrição</label>
+  <textarea id="descricao" rows="2" required></textarea>
 
-    const formData = new FormData();
-    formData.append("action", "add");
-    formData.append("nome", document.getElementById("nome").value);
-    formData.append("descricao", document.getElementById("descricao").value);
-    formData.append("preco", document.getElementById("preco").value);
-    formData.append("estoque", document.getElementById("estoque").value);
-    formData.append("imagemBase64", base64);
-    formData.append("imagemTipo", file.type);
+  <label>Preço (R$)</label>
+  <input type="number" id="preco" step="0.01" required>
 
-    try {
-      const resposta = await fetch(SCRIPT_URL, { method: "POST", body: formData });
-      const dados = await resposta.json();
-      if (dados.sucesso || dados.success) {
-        msg.style.color = "#4CAF50";
-        msg.innerText = "✅ Produto adicionado com sucesso!";
-        if(dados.id){
-          idProdutoDiv.innerHTML = `ID do Produto:<br><b>${dados.id}</b>`;
-        }
-        form.reset();
-        preview.style.display = "none";
-      } else {
-        msg.style.color = "red";
-        msg.innerText = "❌ Erro: " + (dados.message || dados.erro || "Falha desconhecida");
-      }
-    } catch (erro) {
-      msg.style.color = "red";
-      msg.innerText = "❌ Falha ao conectar: " + erro;
+  <label>Estoque</label>
+  <input type="number" id="estoque" required>
+
+  <label>Imagem do Produto</label>
+  <input type="file" id="imagem" accept="image/*" required>
+  
+  <img id="preview" class="preview" style="display:none;">
+  
+  <button type="submit">📤 Enviar Produto</button>
+  
+</form>
+<div id="mensagem"></div>
+<div id="idProduto"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXiS_pat0Gi1OTirwm5NZSrWUdiB4onXobDo1x0bBMudvnXBf13SQMxSyIJPlCL-IS6g/exec";
+
+const form = document.getElementById("formProduto");
+const imgInput = document.getElementById("imagem");
+const preview = document.getElementById("preview");
+const msg = document.getElementById("mensagem");
+const idProdutoDiv = document.getElementById("idProduto");
+
+// Preview da imagem
+imgInput.addEventListener("change", () => {
+    const file = imgInput.files[0];
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
     }
-  };
-  reader.readAsDataURL(file);
 });
+
+// Envio do formulário com imagem em base64
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.innerText = "⏳ Enviando...";
+    msg.style.color = "#fff";
+    idProdutoDiv.innerText = "";
+
+    const file = imgInput.files[0];
+    if (!file) {
+        msg.innerText = "Selecione uma imagem!";
+        return;
+    }
+
+    // Lê a imagem como base64
+    const reader = new FileReader();
+    reader.onload = async function(event) {
+        const base64 = event.target.result.split(',')[1]; // remove o prefixo data:image/...
+
+        const formData = new FormData();
+        formData.append("action", "add");
+        formData.append("nome", document.getElementById("nome").value);
+        formData.append("descricao", document.getElementById("descricao").value);
+        formData.append("preco", document.getElementById("preco").value);
+        formData.append("estoque", document.getElementById("estoque").value);
+        formData.append("imagemBase64", base64);
+        formData.append("imagemTipo", file.type);
+
+        try {
+            const resposta = await fetch(SCRIPT_URL, { method: "POST", body: formData });
+            const dados = await resposta.json();
+
+            if (dados.sucesso || dados.success) {
+                msg.style.color = "#4CAF50";
+                msg.innerText = "✅ Produto adicionado com sucesso!";
+                if(dados.id){
+                    idProdutoDiv.innerHTML = `ID do Produto:<br><b>${dados.id}</b>`;
+                }
+                form.reset();
+                preview.style.display = "none";
+            } else {
+                msg.style.color = "red";
+                msg.innerText = "❌ Erro: " + (dados.message || dados.erro || "Falha desconhecida");
+            }
+        } catch (erro) {
+            msg.style.color = "red";
+            msg.innerText = "❌ Falha ao conectar: " + erro;
+        }
+    };
+    reader.readAsDataURL(file);
+});
+</script>
+
+</body>
+</html>
