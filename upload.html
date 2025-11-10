@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload de Imagem - Bravo13</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+    .box {
+      border: 2px dashed #c32b2b;
+      border-radius: 12px;
+      padding: 30px;
+      display: inline-block;
+      width: 300px;
+      background: #1c1c1c;
+    }
+    input[type="file"] {
+      margin: 10px 0;
+      color: white;
+    }
+    button {
+      background: #c32b2b;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #e43b3b;
+    }
+    #resultado {
+      margin-top: 20px;
+      color: #0f0;
+      font-size: 14px;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📸 Enviar Imagem - Bravo13</h2>
+  <div class="box">
+    <input type="file" id="imagem" accept="image/*">
+    <br>
+    <button onclick="enviarImagem()">Enviar</button>
+    <div id="resultado"></div>
+  </div>
+
+  <script>
+    function enviarImagem() {
+      const arquivo = document.getElementById('imagem').files[0];
+      const resultado = document.getElementById('resultado');
+
+      if (!arquivo) {
+        resultado.innerText = 'Selecione uma imagem primeiro.';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        const imagemBase64 = reader.result.split(',')[1];
+
+        fetch('https://script.google.com/macros/s/AKfycbzXiS_pat0Gi1OTirwm5NZSrWUdiB4onXobDo1x0bBMudvnXBf13SQMxSyIJPlCL-IS6g/exec', {
+          method: 'POST',
+          body: JSON.stringify({
+            imagem: imagemBase64,
+            nomeArquivo: arquivo.name
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => res.text())
+        .then(txt => {
+          resultado.style.color = '#0f0';
+          resultado.innerHTML = '✅ ' + txt;
+        })
+        .catch(err => {
+          resultado.style.color = 'red';
+          resultado.innerText = 'Erro ao enviar: ' + err;
+        });
+      };
+
+      reader.readAsDataURL(arquivo);
+    }
+  </script>
+
+</body>
+</html>
