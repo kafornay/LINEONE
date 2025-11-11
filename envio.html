@@ -23,11 +23,8 @@
             color: #1a73e8;
             margin-bottom: 20px;
         }
-        #fileInput {
+        input[type="file"] {
             margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
         }
         button {
             padding: 10px 20px;
@@ -41,7 +38,7 @@
         button:hover {
             background-color: #0056b3;
         }
-        #status, #link {
+        #status {
             margin-top: 20px;
             font-weight: bold;
             word-break: break-all;
@@ -64,15 +61,14 @@
         
         <input type="file" id="fileInput" accept="image/*"><br><br>
         
-        <button onclick="enviar()">Enviar Imagem</button>
+        <button onclick="enviar()" id="uploadButton">Enviar Imagem</button>
         
         <p id="status">Aguardando seleção de arquivo.</p>
         <p id="link"></p>
     </div>
 
     <script>
-        // 🛑 USE SUA URL ATUALIZADA AQUI!
-        // A URL que você forneceu foi:
+        // 🛑 SUA URL DE EXECUÇÃO DO APPS SCRIPT
         const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec';
 
         async function enviar() {
@@ -80,6 +76,7 @@
             const file = fileInput.files[0];
             const statusElement = document.getElementById('status');
             const linkElement = document.getElementById('link');
+            const buttonElement = document.getElementById('uploadButton');
             
             if (!file) {
                 statusElement.textContent = '⚠️ Por favor, selecione uma imagem para enviar.';
@@ -90,15 +87,15 @@
             statusElement.textContent = '⏳ Enviando... Por favor, aguarde.';
             statusElement.className = '';
             linkElement.innerHTML = '';
+            buttonElement.disabled = true; // Desabilita o botão para evitar cliques múltiplos
 
             const reader = new FileReader();
             
             reader.onload = async () => {
                 try {
-                    // Obtém a string Base64 removendo o prefixo Data URL
                     const base64Data = reader.result.split(',')[1];
                     
-                    // Montar o objeto JSON (necessário para o Apps Script receber via POST/CORS)
+                    // Montar o objeto JSON (Formato necessário para evitar o bloqueio CORS)
                     const payload = {
                         data: base64Data,
                         filename: file.name
@@ -106,11 +103,9 @@
 
                     const response = await fetch(APP_SCRIPT_URL, {
                         method: 'POST',
-                        // MUDANÇA CRÍTICA: Definir Content-Type como JSON para evitar bloqueio CORS
                         headers: { 
                             'Content-Type': 'application/json' 
                         }, 
-                        // Enviar o objeto JSON stringificado
                         body: JSON.stringify(payload) 
                     });
 
@@ -121,17 +116,17 @@
                         statusElement.className = 'success';
                         linkElement.innerHTML = `<a href="${data.link}" target="_blank">Abrir imagem no Google Drive</a>`;
                     } else {
-                        statusElement.textContent = '❌ Erro no Upload: ' + (data.error || 'Falha desconhecida.');
+                        statusElement.textContent = '❌ Erro no Upload: ' + (data.error || 'Falha desconhecida. Verifique os logs do Apps Script.');
                         statusElement.className = 'error';
                     }
                 } catch (err) {
-                    // Erro de rede ou JSON inválido (o famoso Failed to fetch)
-                    statusElement.textContent = '❌ Erro de Comunicação: Verifique o console ou a URL. Detalhe: ' + err.message;
+                    statusElement.textContent = '❌ Erro de Comunicação: Verifique a URL do Apps Script e as configurações de CORS. Detalhe: ' + err.message;
                     statusElement.className = 'error';
+                } finally {
+                    buttonElement.disabled = false; // Reabilita o botão
                 }
             };
             
-            // Inicia a leitura do arquivo como Data URL (Base64)
             reader.readAsDataURL(file);
         }
     </script>
