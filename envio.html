@@ -1,103 +1,51 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload para Google Drive (Apps Script)</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-        }
-        #status, #link {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        #status {
-            color: #333;
-        }
-        #link a {
-            color: #1a73e8;
-            text-decoration: none;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-    </style>
-</head>
-<body>
-    <h2>☁️ Envio de Imagem para o Google Drive</h2>
-    
-    <input type="file" id="fileInput" accept="image/*"><br><br>
-    
-    <button onclick="enviar()">Enviar Imagem</button>
-    
-    <p id="status">Aguardando seleção de arquivo.</p>
-    <p id="link"></p>
+<script>
+    // URL que você me forneceu:
+    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec';
 
-    <script>
-        // 🛑 SUBSTITUA PELA SUA URL DE IMPLANTAÇÃO REAL!
-        // A URL que você forneceu foi:
-        const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec';
+    async function enviar() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        
+        if (!file) return alert('Selecione uma imagem!');
 
-        async function enviar() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                document.getElementById('status').textContent = '⚠️ Por favor, selecione uma imagem para enviar.';
-                return;
-            }
+        document.getElementById('status').textContent = '⏳ Enviando... Por favor, aguarde.';
+        document.getElementById('link').innerHTML = '';
 
-            document.getElementById('status').textContent = '⏳ Enviando... Por favor, aguarde.';
-            document.getElementById('link').innerHTML = '';
+        const reader = new FileReader();
+        
+        reader.onload = async () => {
+            try {
+                const base64Data = reader.result.split(',')[1];
+                
+                // 🛑 NOVO: Montar o objeto JSON para envio
+                const payload = {
+                    data: base64Data,
+                    filename: file.name
+                };
 
-            const reader = new FileReader();
-            
-            reader.onload = async () => {
-                try {
-                    // O reader.result é uma string Data URL (ex: "data:image/jpeg;base64,...").
-                    // split(',')[1] remove a parte inicial ("data:image/jpeg;base64,") e pega apenas o Base64.
-                    const base64Data = reader.result.split(',')[1];
-                    
-                    const response = await fetch(APP_SCRIPT_URL, {
-                        method: 'POST',
-                        // O Apps Script lida melhor com Base64 RAW se não especificarmos um Content-Type
-                        // ou usarmos 'application/octet-stream' (como no seu original). Vamos manter o octet-stream.
-                        headers: { 
-                            'Content-Type': 'application/octet-stream' 
-                        }, 
-                        body: base64Data // Envia o Base64 RAW como corpo da requisição POST
-                    });
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: 'POST',
+                    // 🛑 MUDANÇA CRÍTICA: Content-Type agora é JSON
+                    headers: { 
+                        'Content-Type': 'application/json' 
+                    }, 
+                    // Enviar o objeto JSON stringificado
+                    body: JSON.stringify(payload) 
+                });
 
-                    // O Apps Script retorna um JSON
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        document.getElementById('status').textContent = '✅ Enviado com sucesso! Nome do Arquivo: ' + data.fileName;
-                        document.getElementById('link').innerHTML = `<a href="${data.link}" target="_blank">Abrir imagem no Google Drive</a>`;
-                    } else {
-                        // Exibe a mensagem de erro detalhada retornada pelo Apps Script
-                        document.getElementById('status').textContent = '❌ Erro no Upload: ' + (data.error || 'Falha ao processar o arquivo.');
-                    }
-                } catch (err) {
-                    // Erro de rede ou JSON inválido
-                    document.getElementById('status').textContent = '❌ Erro de Comunicação: ' + err.message;
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('status').textContent = '✅ Enviado com sucesso!';
+                    document.getElementById('link').innerHTML = `<a href="${data.link}" target="_blank">Abrir imagem no Drive</a>`;
+                } else {
+                    document.getElementById('status').textContent = '❌ Erro: ' + data.error;
                 }
-            };
-            
-            // Lê o arquivo como Data URL (Base64)
-            reader.readAsDataURL(file);
-        }
-    </script>
-</body>
-</html>
+            } catch (err) {
+                // Este erro ('Failed to fetch') que você estava tendo deve parar agora
+                document.getElementById('status').textContent = '❌ Erro de Comunicação: ' + err.message;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
