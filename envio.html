@@ -35,8 +35,12 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
         #status {
             margin-top: 20px;
@@ -87,7 +91,7 @@
             statusElement.textContent = '⏳ Enviando... Por favor, aguarde.';
             statusElement.className = '';
             linkElement.innerHTML = '';
-            buttonElement.disabled = true; // Desabilita o botão para evitar cliques múltiplos
+            buttonElement.disabled = true; // Desabilita o botão
 
             const reader = new FileReader();
             
@@ -95,7 +99,6 @@
                 try {
                     const base64Data = reader.result.split(',')[1];
                     
-                    // Montar o objeto JSON (Formato necessário para evitar o bloqueio CORS)
                     const payload = {
                         data: base64Data,
                         filename: file.name
@@ -103,11 +106,17 @@
 
                     const response = await fetch(APP_SCRIPT_URL, {
                         method: 'POST',
+                        // Essencial para disparar a requisição OPTIONS e o CORS
                         headers: { 
                             'Content-Type': 'application/json' 
                         }, 
                         body: JSON.stringify(payload) 
                     });
+
+                    // Verifica se a resposta HTTP foi bem-sucedida (status 200)
+                    if (!response.ok) {
+                         throw new Error(`Falha na rede ou permissão. Status: ${response.status}`);
+                    }
 
                     const data = await response.json();
                     
@@ -116,11 +125,12 @@
                         statusElement.className = 'success';
                         linkElement.innerHTML = `<a href="${data.link}" target="_blank">Abrir imagem no Google Drive</a>`;
                     } else {
-                        statusElement.textContent = '❌ Erro no Upload: ' + (data.error || 'Falha desconhecida. Verifique os logs do Apps Script.');
+                        statusElement.textContent = '❌ Erro no Upload: ' + (data.error || 'Falha desconhecida.');
                         statusElement.className = 'error';
                     }
                 } catch (err) {
-                    statusElement.textContent = '❌ Erro de Comunicação: Verifique a URL do Apps Script e as configurações de CORS. Detalhe: ' + err.message;
+                    // Este bloco captura erros de rede (CORS, "Failed to fetch") e erros HTTP
+                    statusElement.textContent = '❌ Erro de Comunicação: ' + err.message;
                     statusElement.className = 'error';
                 } finally {
                     buttonElement.disabled = false; // Reabilita o botão
