@@ -1,51 +1,139 @@
-<script>
-    // URL que você me forneceu:
-    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec';
-
-    async function enviar() {
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload para Google Drive (Apps Script)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            color: #1a73e8;
+            margin-bottom: 20px;
+        }
+        #fileInput {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status, #link {
+            margin-top: 20px;
+            font-weight: bold;
+            word-break: break-all;
+        }
+        #status.success {
+            color: green;
+        }
+        #status.error {
+            color: red;
+        }
+        #link a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>☁️ Envio de Imagem para o Google Drive</h2>
         
-        if (!file) return alert('Selecione uma imagem!');
-
-        document.getElementById('status').textContent = '⏳ Enviando... Por favor, aguarde.';
-        document.getElementById('link').innerHTML = '';
-
-        const reader = new FileReader();
+        <input type="file" id="fileInput" accept="image/*"><br><br>
         
-        reader.onload = async () => {
-            try {
-                const base64Data = reader.result.split(',')[1];
-                
-                // 🛑 NOVO: Montar o objeto JSON para envio
-                const payload = {
-                    data: base64Data,
-                    filename: file.name
-                };
+        <button onclick="enviar()">Enviar Imagem</button>
+        
+        <p id="status">Aguardando seleção de arquivo.</p>
+        <p id="link"></p>
+    </div>
 
-                const response = await fetch(APP_SCRIPT_URL, {
-                    method: 'POST',
-                    // 🛑 MUDANÇA CRÍTICA: Content-Type agora é JSON
-                    headers: { 
-                        'Content-Type': 'application/json' 
-                    }, 
-                    // Enviar o objeto JSON stringificado
-                    body: JSON.stringify(payload) 
-                });
+    <script>
+        // 🛑 USE SUA URL ATUALIZADA AQUI!
+        // A URL que você forneceu foi:
+        const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec';
 
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('status').textContent = '✅ Enviado com sucesso!';
-                    document.getElementById('link').innerHTML = `<a href="${data.link}" target="_blank">Abrir imagem no Drive</a>`;
-                } else {
-                    document.getElementById('status').textContent = '❌ Erro: ' + data.error;
-                }
-            } catch (err) {
-                // Este erro ('Failed to fetch') que você estava tendo deve parar agora
-                document.getElementById('status').textContent = '❌ Erro de Comunicação: ' + err.message;
+        async function enviar() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const statusElement = document.getElementById('status');
+            const linkElement = document.getElementById('link');
+            
+            if (!file) {
+                statusElement.textContent = '⚠️ Por favor, selecione uma imagem para enviar.';
+                statusElement.className = 'error';
+                return;
             }
-        };
-        reader.readAsDataURL(file);
-    }
-</script>
+
+            statusElement.textContent = '⏳ Enviando... Por favor, aguarde.';
+            statusElement.className = '';
+            linkElement.innerHTML = '';
+
+            const reader = new FileReader();
+            
+            reader.onload = async () => {
+                try {
+                    // Obtém a string Base64 removendo o prefixo Data URL
+                    const base64Data = reader.result.split(',')[1];
+                    
+                    // Montar o objeto JSON (necessário para o Apps Script receber via POST/CORS)
+                    const payload = {
+                        data: base64Data,
+                        filename: file.name
+                    };
+
+                    const response = await fetch(APP_SCRIPT_URL, {
+                        method: 'POST',
+                        // MUDANÇA CRÍTICA: Definir Content-Type como JSON para evitar bloqueio CORS
+                        headers: { 
+                            'Content-Type': 'application/json' 
+                        }, 
+                        // Enviar o objeto JSON stringificado
+                        body: JSON.stringify(payload) 
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        statusElement.textContent = '✅ Enviado com sucesso! Nome: ' + data.fileName;
+                        statusElement.className = 'success';
+                        linkElement.innerHTML = `<a href="${data.link}" target="_blank">Abrir imagem no Google Drive</a>`;
+                    } else {
+                        statusElement.textContent = '❌ Erro no Upload: ' + (data.error || 'Falha desconhecida.');
+                        statusElement.className = 'error';
+                    }
+                } catch (err) {
+                    // Erro de rede ou JSON inválido (o famoso Failed to fetch)
+                    statusElement.textContent = '❌ Erro de Comunicação: Verifique o console ou a URL. Detalhe: ' + err.message;
+                    statusElement.className = 'error';
+                }
+            };
+            
+            // Inicia a leitura do arquivo como Data URL (Base64)
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
