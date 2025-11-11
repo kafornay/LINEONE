@@ -1,101 +1,47 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Upload para o Google Drive</title>
-<style>
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  margin-top: 60px;
-  background: #f3f3f3;
-}
-h2 {
-  color: #333;
-}
-input, button {
-  margin: 10px;
-  padding: 10px 15px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-}
-button {
-  background: #4285f4;
-  color: white;
-  cursor: pointer;
-  border: none;
-}
-button:hover {
-  background: #3367d6;
-}
-#status {
-  margin-top: 20px;
-  font-weight: bold;
-}
-img {
-  max-width: 300px;
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Upload para Google Drive</title>
 </head>
 <body>
+  <h2>Envio de imagem para o Drive</h2>
+  <input type="file" id="fileInput" accept="image/*"><br><br>
+  <button onclick="enviar()">Enviar</button>
+  <p id="status"></p>
+  <p id="link"></p>
 
-<h2>📤 Envio de Foto para o Google Drive</h2>
+  <script>
+    async function enviar() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      if (!file) return alert('Selecione uma imagem!');
 
-<form id="uploadForm">
-  <input type="file" id="fileInput" accept="image/*" required>
-  <br>
-  <button type="submit">Enviar Foto</button>
-</form>
+      document.getElementById('status').textContent = 'Enviando...';
 
-<p id="status"></p>
-<img id="preview" style="display:none;">
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64Data = reader.result.split(',')[1];
+          const response = await fetch('https://script.google.com/macros/s/AKfycbxEoqznykpcIv4Dc45BLzHLyrg0NaYY3IHa8Unmovg4Lm0r5_d1v91Zi4bJsEY9UoBT8Q/exec', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: base64Data
+          });
 
-<script>
-const form = document.getElementById('uploadForm');
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const file = document.getElementById('fileInput').files[0];
-  if (!file) return alert("Selecione uma imagem primeiro!");
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const status = document.getElementById("status");
-  const preview = document.getElementById("preview");
-  
-  status.textContent = "Enviando foto, aguarde...";
-  preview.style.display = "none";
-
-  // ✅ URL do seu Apps Script:
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxEoqznykpcIv4Dc45BLzHLyrg0NaYY3IHa8Unmovg4Lm0r5_d1v91Zi4bJsEY9UoBT8Q/exec";
-
-  try {
-    const response = await fetch(scriptURL, {
-      method: "POST",
-      body: formData
-    });
-
-    const result = await response.json();
-    
-    if (result.status === "ok") {
-      status.textContent = result.message;
-      preview.src = result.url;
-      preview.style.display = "block";
-    } else {
-      status.textContent = "Erro: " + result.message;
+          const data = await response.json();
+          if (data.success) {
+            document.getElementById('status').textContent = '✅ Enviado com sucesso!';
+            document.getElementById('link').innerHTML = `<a href="${data.link}" target="_blank">Abrir imagem no Drive</a>`;
+          } else {
+            document.getElementById('status').textContent = 'Erro: ' + data.error;
+          }
+        } catch (err) {
+          document.getElementById('status').textContent = 'Erro ao enviar: ' + err.message;
+        }
+      };
+      reader.readAsDataURL(file);
     }
-
-  } catch (err) {
-    status.textContent = "Erro ao enviar: " + err;
-  }
-});
-</script>
-
+  </script>
 </body>
 </html>
