@@ -1,144 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload para Google Drive (Apps Script)</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            text-align: center;
-            background-color: #f4f4f9;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 30px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
-        }
-        h2 {
-            color: #1a73e8;
-            margin-bottom: 20px;
-        }
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover:not(:disabled) {
-            background-color: #0056b3;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        #status {
-            margin-top: 20px;
-            font-weight: bold;
-            word-break: break-all;
-        }
-        #status.success {
-            color: green;
-        }
-        #status.error {
-            color: red;
-        }
-        #link a {
-            color: #1a73e8;
-            text-decoration: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enviar Foto para Google Drive</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  form {
+    background: #222;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #000;
+  }
+
+  input[type="file"] {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+  }
+
+  button {
+    background: #c32b2b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #e63636;
+  }
+
+  #status {
+    margin-top: 15px;
+    font-size: 0.9em;
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h2>☁️ Envio de Imagem para o Google Drive</h2>
-        
-        <input type="file" id="fileInput" accept="image/*"><br><br>
-        
-        <button onclick="enviar()" id="uploadButton">Enviar Imagem</button>
-        
-        <p id="status">Aguardando seleção de arquivo.</p>
-        <p id="link"></p>
-    </div>
 
-    <script>
-        // 🛑 SUA URL DE EXECUÇÃO DO APPS SCRIPT
-        const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec';
+<h2>Enviar Foto para Google Drive 📸</h2>
 
-        async function enviar() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            const statusElement = document.getElementById('status');
-            const linkElement = document.getElementById('link');
-            const buttonElement = document.getElementById('uploadButton');
-            
-            if (!file) {
-                statusElement.textContent = '⚠️ Por favor, selecione uma imagem para enviar.';
-                statusElement.className = 'error';
-                return;
-            }
+<form id="uploadForm">
+  <input type="file" id="file" accept="image/*" required><br>
+  <button type="submit">Enviar</button>
+</form>
 
-            statusElement.textContent = '⏳ Enviando... Por favor, aguarde.';
-            statusElement.className = '';
-            linkElement.innerHTML = '';
-            buttonElement.disabled = true; // Desabilita o botão
+<div id="status"></div>
 
-            const reader = new FileReader();
-            
-            reader.onload = async () => {
-                try {
-                    const base64Data = reader.result.split(',')[1];
-                    
-                    const payload = {
-                        data: base64Data,
-                        filename: file.name
-                    };
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec"; // substitua aqui pelo SEU novo URL do script implantado
 
-                    const response = await fetch(APP_SCRIPT_URL, {
-                        method: 'POST',
-                        // Essencial para disparar a requisição OPTIONS e o CORS
-                        headers: { 
-                            'Content-Type': 'application/json' 
-                        }, 
-                        body: JSON.stringify(payload) 
-                    });
+document.getElementById("uploadForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const file = document.getElementById("file").files[0];
+  const formData = new FormData();
+  formData.append("file", file);
 
-                    // Verifica se a resposta HTTP foi bem-sucedida (status 200)
-                    if (!response.ok) {
-                         throw new Error(`Falha na rede ou permissão. Status: ${response.status}`);
-                    }
+  document.getElementById("status").innerText = "Enviando...";
 
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        statusElement.textContent = '✅ Enviado com sucesso! Nome: ' + data.fileName;
-                        statusElement.className = 'success';
-                        linkElement.innerHTML = `<a href="${data.link}" target="_blank">Abrir imagem no Google Drive</a>`;
-                    } else {
-                        statusElement.textContent = '❌ Erro no Upload: ' + (data.error || 'Falha desconhecida.');
-                        statusElement.className = 'error';
-                    }
-                } catch (err) {
-                    // Este bloco captura erros de rede (CORS, "Failed to fetch") e erros HTTP
-                    statusElement.textContent = '❌ Erro de Comunicação: ' + err.message;
-                    statusElement.className = 'error';
-                } finally {
-                    buttonElement.disabled = false; // Reabilita o botão
-                }
-            };
-            
-            reader.readAsDataURL(file);
-        }
-    </script>
+  fetch(scriptURL, { method: "POST", body: formData })
+    .then(res => res.text())
+    .then(msg => {
+      document.getElementById("status").innerText = msg;
+    })
+    .catch(err => {
+      document.getElementById("status").innerText = "Erro ao enviar: " + err;
+    });
+});
+</script>
+
 </body>
 </html>
