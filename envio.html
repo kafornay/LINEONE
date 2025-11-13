@@ -14,22 +14,29 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
+    margin: 0;
+  }
+
+  h2 {
+    margin-bottom: 20px;
   }
 
   form {
-    background: #222;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 10px #000;
+    background: #1e1e1e;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    text-align: center;
   }
 
   input[type="file"] {
-    background: #333;
+    background: #2c2c2c;
     color: white;
     border: none;
     padding: 10px;
     margin-bottom: 15px;
     border-radius: 8px;
+    width: 100%;
   }
 
   button {
@@ -39,10 +46,19 @@
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
   }
 
   button:hover {
     background: #e63636;
+  }
+
+  #preview {
+    margin-top: 15px;
+    max-width: 200px;
+    border-radius: 10px;
+    display: none;
   }
 
   #status {
@@ -53,34 +69,56 @@
 </head>
 <body>
 
-<h2>Enviar Foto para Google Drive 📸</h2>
+<h2>Enviar Foto para o Google Drive 📸</h2>
 
 <form id="uploadForm">
   <input type="file" id="file" accept="image/*" required><br>
+  <img id="preview" alt="Pré-visualização">
+  <br>
   <button type="submit">Enviar</button>
 </form>
 
 <div id="status"></div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec"; // substitua aqui pelo SEU novo URL do script implantado
+const scriptURL = "https://script.google.com/macros/s/AKfycbzqod3GjO7m5bFed-KNxaTKVl9uR-hCePwCjMLnpblR-GFOqoXZVF4UHqXtWrZZVaxfVg/exec"; // substitua pelo URL da implantação do Apps Script
 
-document.getElementById("uploadForm").addEventListener("submit", e => {
+// pré-visualização da imagem
+document.getElementById("file").addEventListener("change", function() {
+  const file = this.files[0];
+  const preview = document.getElementById("preview");
+  if (file) {
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+  } else {
+    preview.style.display = "none";
+  }
+});
+
+document.getElementById("uploadForm").addEventListener("submit", async e => {
   e.preventDefault();
   const file = document.getElementById("file").files[0];
-  const formData = new FormData();
-  formData.append("file", file);
+  if (!file) return alert("Selecione uma foto primeiro!");
 
-  document.getElementById("status").innerText = "Enviando...";
+  document.getElementById("status").innerText = "📤 Enviando...";
 
-  fetch(scriptURL, { method: "POST", body: formData })
-    .then(res => res.text())
-    .then(msg => {
-      document.getElementById("status").innerText = msg;
-    })
-    .catch(err => {
-      document.getElementById("status").innerText = "Erro ao enviar: " + err;
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+
+    const response = await fetch(scriptURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type,
+        "X-Filename": encodeURIComponent(file.name)
+      },
+      body: arrayBuffer
     });
+
+    const text = await response.text();
+    document.getElementById("status").innerText = text;
+  } catch (err) {
+    document.getElementById("status").innerText = "❌ Erro ao enviar: " + err;
+  }
 });
 </script>
 
