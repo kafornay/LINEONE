@@ -2,106 +2,160 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🕶️ LINE ONE — Vitrine</title>
-<link href="https://fonts.googleapis.com/css?family=Poppins:400,600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🕶️ LINE ONE — Vitrine Oficial</title>
 <style>
 body {
-    background: #111;
-    color: #fff;
-    font-family: "Poppins", sans-serif;
-    margin:0; padding:0;
+  background: #111;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
 }
 header {
-    background:#c32b2b; color:#fff; padding:18px; text-align:center; font-size:24px; font-weight:bold; letter-spacing:.5px; box-shadow:0px .5px .5px #000a;
+  background: #c32b2b;
+  color: #fff;
+  padding: 15px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 0 10px #000;
 }
 .container {
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:24px; padding:28px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 .card {
-    background:#181818; border-radius:14px; overflow:hidden; box-shadow:0 .5px .5px #000a; transition:.3s; position:relative;
+  background: #1e1e1e;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 10px #000;
+  transition: 0.3s;
 }
-.card:hover { transform:translateY(-7px); box-shadow:0 .5px .5px #c32b2baa;}
-.card img { width:100%; height:180px; object-fit:cover;}
-.card-content { padding:14px;}
-.card h3 { margin:.5em .1em .2em .1em; color:#fff;}
-.card p { color:#bbb; font-size:.98em;}
-.price { color:#4CAF50; font-weight:bold; font-size:18px; margin-top:.7em;}
-button { width:100%; background:#c32b2b; border:none; color:#fff; padding:.7em; border-radius:.5em; cursor:pointer; font-weight:bold; margin-top:.7em; transition:.2s;}
-button:hover { background:#a62121;}
-button.esgotado { background:#555; cursor:not-allowed;}
-footer { text-align:center; padding:.9em; color:#777;}
-.card-id-tip { display:none; position:absolute; top:.7em; right:.7em; background:#222d; color:#fff; font-size:.85em; padding:.3em .7em; border-radius:.6em;}
-.card:hover .card-id-tip { display:block;}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px #c32b2b66;
+}
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+.card-content {
+  padding: 10px 15px;
+}
+.card h3 {
+  margin: 0;
+  color: #fff;
+}
+.card p {
+  color: #bbb;
+  font-size: 14px;
+  margin-top: 4px;
+}
+.price {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 10px;
+}
+button {
+  width: 100%;
+  background: #c32b2b;
+  border: none;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: 0.2s;
+}
+button:hover {
+  background: #a62121;
+}
+button.esgotado {
+  background: gray;
+  cursor: not-allowed;
+}
+footer {
+  text-align: center;
+  padding: 15px;
+  color: #777;
+  font-size: 14px;
+  border-top: 1px solid #222;
+}
 </style>
 </head>
 <body>
 
 <header>🕶️ LINE ONE — Vitrine</header>
-
-<div class="container" id="produtos"></div>
-
-<footer>© LINE ONE</footer>
+<div class="container" id="produtos">⏳ Carregando produtos...</div>
+<footer>© 2025 LINE ONE — Desenvolvido por Ronaldo Silveira Couto</footer>
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXiS_pat0Gi1OTirwm5NZSrWUdiB4onXobDo1x0bBMudvnXBf13SQMxSyIJPlCL-IS6g/exec";
-const WHATSAPP = "5522999631760"; // seu número em formato internacional
+const WHATSAPP = "5522999631760"; // seu número no formato internacional
 
 async function carregarProdutos() {
-    const container = document.getElementById("produtos");
-    container.innerHTML = "⏳ Carregando produtos...";
+  const container = document.getElementById("produtos");
+  container.innerHTML = "⏳ Carregando produtos...";
 
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=get`);
-        const dados = await res.json();
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=get`);
+    const produtos = await res.json();
 
-        container.innerHTML = "";
-
-        dados.forEach(prod => {
-            const card = document.createElement("div");
-            card.className = "card";
-
-            const imagem = prod.imagemUrl || prod.imagem || "https://via.placeholder.com/300x200?text=Sem+Imagem";
-            const estoque = parseInt(prod.estoque) || 0;
-
-            card.innerHTML = `
-                <span class="card-id-tip">ID:<br>${prod.id || ""}</span>
-                <img src="${imagem}" alt="${prod.nome}">
-                <div class="card-content">
-                    <h3>${prod.nome}</h3>
-                    <p>${prod.descricao}</p>
-                    <div class="price">R$ ${Number(prod.preco).toFixed(2)}</div>
-                    ${
-                        estoque > 0
-                        ? `<button onclick="enviarCarrinho('${prod.nome}', '${prod.preco}')">🛒 Adicionar ao Carrinho</button>`
-                        : `<button class="esgotado" onclick="avisar('${prod.nome}')">🔔 Avisar quando chegar</button>`
-                    }
-                </div>
-            `;
-
-            container.appendChild(card);
-        });
-
-    } catch (erro) {
-        container.innerHTML = "❌ Erro ao carregar produtos.";
-        console.error(erro);
+    if (!produtos || produtos.length === 0) {
+      container.innerHTML = "Nenhum produto disponível no momento.";
+      return;
     }
+
+    container.innerHTML = "";
+    produtos.forEach(prod => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const imagem = prod.LinkImagem || "https://via.placeholder.com/300x200?text=Sem+Imagem";
+      const estoque = parseInt(prod.Estoque) || 0;
+
+      card.innerHTML = `
+        <img src="${imagem}" alt="${prod.Nome}">
+        <div class="card-content">
+          <h3>${prod.Nome}</h3>
+          <p>${prod.Descricao}</p>
+          <div class="price">R$ ${Number(prod.Preco).toFixed(2)}</div>
+          ${
+            estoque > 0
+              ? `<button onclick="comprar('${prod.Nome}', '${prod.Preco}')">🛒 Comprar</button>`
+              : `<button class="esgotado" onclick="avisar('${prod.Nome}')">🔔 Avisar quando chegar</button>`
+          }
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+  } catch (erro) {
+    console.error(erro);
+    container.innerHTML = "❌ Erro ao carregar produtos.";
+  }
 }
 
-function enviarCarrinho(nome, preco) {
-    const msg = `Olá! Quero comprar o produto *${nome}* por R$${preco}.`;
-    const link = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    window.open(link, "_blank");
+function comprar(nome, preco) {
+  const msg = `Olá! Quero comprar o produto *${nome}* por R$${preco}.`;
+  const link = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  window.open(link, "_blank");
 }
 
 function avisar(nome) {
-    const msg = `Olá! Quero ser avisado quando o produto *${nome}* voltar ao estoque.`;
-    const link = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    window.open(link, "_blank");
+  const msg = `Olá! Quero ser avisado quando o produto *${nome}* voltar ao estoque.`;
+  const link = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  window.open(link, "_blank");
 }
 
 carregarProdutos();
 </script>
-
 </body>
 </html>
