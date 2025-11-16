@@ -1,5 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LINE ONE — Vitrine de Produtos</title>
+  <style>
+    :root {
+      --bg: #f2f3f5;
+      --card: #fff;
+      --accent: #c32b2b;
+      --dark: #111;
+    }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: var(--dark);
+      color: #fff;
+      padding: 18px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.4em;
+      letter-spacing: 1px;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 12px;
+    }
+    .produtos-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      width: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 14px 16px 14px;
+    }
+    .card img {
+      width: 100%;
+      max-width: 220px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #eee;
+    }
+    .card-content {
+      width: 100%;
+      text-align: center;
+    }
+    .card-content h3 {
+      margin: 12px 0 6px 0;
+      font-size: 1.1em;
+    }
+    .card-content p {
+      color: #444;
+      font-size: .98em;
+      min-height: 38px;
+    }
+    .price {
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 1.15em;
+      margin-top: 6px;
+    }
+    .card button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background .2s;
+    }
+    .card button.esgotado {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    @media (max-width:600px) {
+      .produtos-grid { flex-direction: column; align-items:center; }
+    }
+  </style>
+</head>
+<body>
+<header>LINE ONE — Vitrine de Produtos</header>
+<div class="wrap">
+  <div id="produtos" class="produtos-grid">Carregando produtos...</div>
+</div>
+
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyO9P-RpXnQGQFXoYEKyIV6VIg56KVpf37zkpLoeVSy56idoKpdzyfJjcmp-rGou99I/exec"; // Exemplo: https://script.google.com/macros/s/AKfycb.../exec
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyO9P-RpXnQGQFXoYEKyIV6VIg56KVpf37zkpLoeVSy56idoKpdzyfJjcmp-rGou99I/exec";
 const WHATSAPP = "5522999631760"; // seu número no formato internacional
 
 async function carregarProdutos() {
@@ -17,13 +121,17 @@ async function carregarProdutos() {
     produtos.forEach(prod => {
       const card = document.createElement("div");
       card.className = "card";
+      
       let imagem = prod.ImagemBase64 || "";
       if (imagem && !imagem.startsWith("data:image")) {
-        imagem = imagem; // já é um link
+        // Se for um link direto
+        imagem = imagem; 
       } else if (!imagem) {
         imagem = "https://via.placeholder.com/300x200?text=Sem+Imagem";
       }
+
       const estoque = parseInt(prod.Estoque) || 0;
+
       card.innerHTML = `
         <img src="${imagem}" alt="${prod.Nome}">
         <div class="card-content">
@@ -31,7 +139,7 @@ async function carregarProdutos() {
           <p>${prod.Descrição || ""}</p>
           <div class="price">R$ ${Number(prod.Preço).toFixed(2)}</div>
           ${
-            estoque > 0
+            estoque > 0 
               ? `<button onclick="comprar('${encodeURIComponent(prod.Nome)}', '${encodeURIComponent(prod.Preço)}')">🛒 Comprar</button>`
               : `<button class="esgotado" onclick="avisar('${encodeURIComponent(prod.Nome)}')">🔔 Avisar quando chegar</button>`
           }
@@ -62,4 +170,5 @@ function avisar(nome) {
 
 carregarProdutos();
 </script>
-
+</body>
+</html>
