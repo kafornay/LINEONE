@@ -1,153 +1,44 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🕶️ LINE ONE — Vitrine Oficial</title>
-  <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: "Poppins", Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #c32b2b;
-      color: #fff;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      box-shadow: 0 0 10px #000;
-    }
-    .container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-    .card {
-      background: #1e1e1e;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #000;
-      transition: 0.3s;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 20px #c32b2b66;
-    }
-    .card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      background: #222;
-    }
-    .card-content {
-      padding: 10px 15px;
-    }
-    .card h3 {
-      margin: 0;
-      color: #fff;
-    }
-    .card p {
-      color: #bbb;
-      font-size: 14px;
-      margin-top: 4px;
-    }
-    .price {
-      color: #4CAF50;
-      font-weight: bold;
-      font-size: 18px;
-      margin-top: 10px;
-    }
-    button {
-      width: 100%;
-      background: #c32b2b;
-      border: none;
-      color: #fff;
-      padding: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 10px;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #a62121;
-    }
-    button.esgotado {
-      background: gray !important;
-      cursor: not-allowed !important;
-    }
-    footer {
-      text-align: center;
-      padding: 15px;
-      color: #777;
-      font-size: 14px;
-      border-top: 1px solid #222;
-    }
-  </style>
-</head>
-<body>
-
-<header>🕶️ LINE ONE — Vitrine</header>
-<div class="container" id="produtos">⏳ Carregando produtos...</div>
-<footer>© 2025 LINE ONE — Desenvolvido por Ronaldo Silveira Couto</footer>
-
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyO9P-RpXnQGQFXoYEKyIV6VIg56KVpf37zkpLoeVSy56idoKpdzyfJjcmp-rGou99I/exec"; // Use sua URL do Apps Script
+const SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_WEBAPP"; // Exemplo: https://script.google.com/macros/s/AKfycb.../exec
 const WHATSAPP = "5522999631760"; // seu número no formato internacional
 
 async function carregarProdutos() {
   const container = document.getElementById("produtos");
   container.innerHTML = "⏳ Carregando produtos...";
-
   try {
     const res = await fetch(SCRIPT_URL);
     const data = await res.json();
-
-    // Espera-se que o Apps Script retorne { produtos:[{nome, preco, descricao, estoque, imagemBase64}] }
     const produtos = data.produtos || [];
-
     if (!produtos.length) {
       container.innerHTML = "Nenhum produto disponível no momento.";
       return;
     }
-
     container.innerHTML = "";
     produtos.forEach(prod => {
       const card = document.createElement("div");
       card.className = "card";
-
-      // Se imagemBase64 for base64, usa ela. Se for link, usa o link. Se não houver, placeholder.
-      let imagem = prod.imagemBase64 || "";
+      let imagem = prod.ImagemBase64 || "";
       if (imagem && !imagem.startsWith("data:image")) {
         imagem = imagem; // já é um link
       } else if (!imagem) {
         imagem = "https://via.placeholder.com/300x200?text=Sem+Imagem";
       }
-
-      const estoque = parseInt(prod.estoque) || 0;
-
+      const estoque = parseInt(prod.Estoque) || 0;
       card.innerHTML = `
-        <img src="${imagem}" alt="${prod.nome}">
+        <img src="${imagem}" alt="${prod.Nome}">
         <div class="card-content">
-          <h3>${prod.nome}</h3>
-          <p>${prod.descricao || ""}</p>
-          <div class="price">R$ ${Number(prod.preco).toFixed(2)}</div>
+          <h3>${prod.Nome}</h3>
+          <p>${prod.Descrição || ""}</p>
+          <div class="price">R$ ${Number(prod.Preço).toFixed(2)}</div>
           ${
             estoque > 0
-              ? `<button onclick="comprar('${encodeURIComponent(prod.nome)}', '${encodeURIComponent(prod.preco)}')">🛒 Comprar</button>`
-              : `<button class="esgotado" onclick="avisar('${encodeURIComponent(prod.nome)}')">🔔 Avisar quando chegar</button>`
+              ? `<button onclick="comprar('${encodeURIComponent(prod.Nome)}', '${encodeURIComponent(prod.Preço)}')">🛒 Comprar</button>`
+              : `<button class="esgotado" onclick="avisar('${encodeURIComponent(prod.Nome)}')">🔔 Avisar quando chegar</button>`
           }
         </div>
       `;
       container.appendChild(card);
     });
-
   } catch (erro) {
     console.error(erro);
     container.innerHTML = "❌ Erro ao carregar produtos.";
@@ -171,5 +62,3 @@ function avisar(nome) {
 
 carregarProdutos();
 </script>
-</body>
-</html>
